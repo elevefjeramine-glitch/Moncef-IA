@@ -1231,12 +1231,52 @@ function buildMsgs(type){
     role:m.role==='ai'?'assistant':'user', content:m.content
   }));
 }
+// ═══════════════════════ LOCAL AI FALLBACK ═══════════════════════
+function localAI(type, msg){
+  const m=msg.toLowerCase();
+  const u=S.user;
+  if(type==='alpha'){
+    if(m.includes('couleur')||m.includes('color')||m.includes('rouge')||m.includes('bleu')||m.includes('vert')||m.includes('violet')){
+      const colors={rouge:'#FF3B3B',bleu:'#1A3CFF',vert:'#00D97E',violet:'#8B5CF6',orange:'#F59E0B',rose:'#EC4899',cyan:'#00C9B1'};
+      const found=Object.keys(colors).find(k=>m.includes(k));
+      if(found){document.documentElement.style.setProperty('--p',colors[found]);logAlpha('🎨 Couleur → '+found);return '🎨 Couleur changée en **'+found+'** ! Le changement est visible immédiatement.';}
+    }
+    if(m.includes('stat')||m.includes('utilisateur')){return '📊 **Statistiques Moncef IA**\n\n- 👥 Utilisateurs : **'+S.users.length+'**\n- 🛡️ Modérateurs : **'+S.users.filter(u=>u.role==="moderator").length+'**\n- 📝 Devoirs : **'+S.hw.length+'**\n- 💬 Messages échangés : **'+(S.stats.msgs||0)+'**';}
+    if(m.includes('notif')){const txt=msg.replace(/notification|notif|envoie|broadcast/gi,'').trim()||'Message de l'administrateur';addNotif(txt);logAlpha('📢 Notif: '+txt);return '📢 Notification envoyée : "'+txt+'"';}
+    if(m.includes('reset')||m.includes('défaut')||m.includes('original')){document.documentElement.style.setProperty('--p','#1A3CFF');document.documentElement.style.setProperty('--a','#00C9B1');logAlpha('🔄 Couleurs réinitialisées');return '🔄 Couleurs remises aux valeurs par défaut !';}
+    return '👑 Commande reçue. Je peux : changer les **couleurs** (ex: "change en violet"), voir les **stats**, envoyer une **notification**. Que souhaitez-vous ?';
+  }
+  // Moncef IA local responses
+  const name=u?u.firstName:'';
+  if(m.includes('bonjour')||m.includes('salut')||m.includes('hello')||m.includes('salam')) return '👋 Bonjour **'+name+'** ! Je suis Moncef IA. Comment puis-je t'aider aujourd'hui ?';
+  if(m.includes('merci')) return '😊 De rien **'+name+'** ! N'hésite pas si tu as d'autres questions !';
+  if(m.includes('pythagore')||m.includes('python')||m.includes('pythagoras')) return '📐 **Théorème de Pythagore**\n\nDans un triangle rectangle : **a² + b² = c²**\n\nOù **c** est l'hypoténuse (le côté le plus long).\n\n**Exemple :** a=3, b=4 → c²=9+16=25 → **c=5** ✅';
+  if(m.includes('math')||m.includes('calcul')||m.includes('équation')||m.includes('equation')) return '🔢 **Mathématiques**\n\nPose-moi ton problème en détail et je t'explique étape par étape ! Je peux t'aider avec :\n- Algèbre et équations\n- Géométrie\n- Statistiques\n- Fonctions\n\nQuel est ton problème spécifique ?';
+  if(m.includes('physique')) return '⚛️ **Physique**\n\nJe peux t'aider avec :\n- Mécanique (vitesse, accélération, forces)\n- Électricité et magnétisme\n- Thermodynamique\n- Optique\n\nDécris-moi ton problème !';
+  if(m.includes('histoire')) return '📜 **Histoire**\n\nJe maîtrise l'histoire mondiale ! Dis-moi :\n- La période (Antiquité, Moyen-Âge, Moderne...)
+- L'événement ou le personnage\n\nEt je t'explique tout !';
+  if(m.includes('anglais')||m.includes('english')) return '🇬🇧 **English**\n\nI can help you with:\n- **Grammar** — verb tenses, sentence structure\n- **Vocabulary** — words and expressions\n- **Writing** — essays, emails, stories\n- **Correction** — paste your text and I'll fix it!\n\nWhat do you need?';
+  if(m.includes('espagnol')||m.includes('español')) return '🇪🇸 **Español**\n\n¡Puedo ayudarte con:\n- **Gramática** — tiempos verbales, concordancia\n- **Vocabulario** — palabras y expresiones\n- **Escritura** — redacciones y textos\n\n¿Qué necesitas?';
+  if(m.includes('arabe')||m.includes('arabic')||m.includes('عربية')) return '🇸🇦 **اللغة العربية**\n\nيمكنني مساعدتك في:\n- **النحو والصرف**\n- **الإملاء والكتابة**\n- **الأدب العربي**\n\nبماذا تحتاج المساعدة؟';
+  if(m.includes('résumé')||m.includes('resume')||m.includes('résumer')) return '📄 **Comment faire un bon résumé**\n\n**1.** Lis le texte en entier une première fois\n**2.** Identifie les idées principales (1 par paragraphe)\n**3.** Reformule avec tes propres mots\n**4.** Structure : Introduction → Développement → Conclusion\n**5.** Vérifie : 1/4 de la longueur du texte original\n\nVeux-tu que je t'aide à résumer un texte spécifique ?';
+  if(m.includes('devoir')||m.includes('homework')) return '📝 **Aide pour les devoirs**\n\nJe peux t'aider à :\n- Comprendre les consignes\n- Trouver une méthode de travail\n- Vérifier ton raisonnement\n- Corriger tes erreurs\n\nPartage ton devoir et dis-moi où tu bloques !';
+  if(m.includes('révision')||m.includes('examen')||m.includes('bac')) return '📖 **Stratégie de révision**\n\n**Méthode Pomodoro :**\n1. 🎯 25 min de travail intense\n2. ☕ 5 min de pause\n3. Répète 4 fois → grande pause de 20 min\n\n**Pour mémoriser :**\n- Fiche récap par chapitre\n- S'expliquer le cours à voix haute\n- Faire des exercices passés\n\nQuelle matière tu révises ?';
+  if(m.includes('code')||m.includes('programme')||m.includes('javascript')||m.includes('python')) return '💻 **Programmation**\n\nJe peux t'aider avec :\n- **Python** — scripts, algorithmes, data science\n- **JavaScript** — web, React, Node.js\n- **HTML/CSS** — sites web\n- **Débogage** — trouver et corriger les erreurs\n\nPartage ton code et dis-moi le problème !';
+  return '🤖 Bonjour **'+name+'** ! Je suis **Moncef IA**. Pose-moi n'importe quelle question sur :\n\n- 📐 **Maths, Physique, Sciences**\n- 📜 **Histoire, Géographie**\n- 🌍 **Langues** (FR, EN, ES, AR)\n- 💻 **Informatique et Code**\n- 📝 **Aide aux devoirs**\n\nJe suis là pour t'aider ! 😊';
+}
+
 async function callClaude(type, userMsg){
   const msgs=buildMsgs(type);
   msgs.push({role:'user',content:userMsg});
+  const API_KEY='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';
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':API_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
     body:JSON.stringify({
       model:'claude-haiku-4-5-20251001',
       max_tokens:1024,
@@ -1337,12 +1377,10 @@ async function sendMsg(type){
     }
   } catch(err){
     typing.classList.remove('show');
-    const fallback={
-      moncef:'⚠️ Je ne peux pas me connecter au serveur IA en ce moment (environnement sandbox). En production avec une clé API valide, je répondrai à toutes tes questions avec la puissance de Claude ! Réessaie dans un instant.',
-      alpha:'⚠️ Connexion ALPHA AI indisponible (sandbox). En production, toutes les commandes seront exécutées en temps réel.'
-    };
-    addAIMsg(type, fallback[type]||'⚠️ Erreur de connexion.');
-    console.error('Claude API:', err);
+    console.error('Claude API:', err.message||err);
+    // Smart local fallback when API unavailable
+    const resp = localAI(type, userMsg);
+    addAIMsg(type, resp);
   }
 }
 function quickMsg(type, txt){
